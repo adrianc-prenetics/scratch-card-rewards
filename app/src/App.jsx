@@ -25,12 +25,12 @@ function GradientLogoBar() {
 
 function EntryForm({ onSubmit }) {
   const { register, handleSubmit } = useForm({
-    defaultValues: { name: '', email: '' },
+    defaultValues: { firstName: '', lastName: '', email: '' },
     mode: 'onSubmit',
   })
 
   const submit = (values) => {
-    const parsed = FormSchema.safeParse(values)
+    const parsed = z.object({ firstName: z.string().min(1), lastName: z.string().min(1), email: z.string().email() }).safeParse(values)
     if (!parsed.success) return
     onSubmit(parsed.data)
   }
@@ -50,7 +50,8 @@ function EntryForm({ onSubmit }) {
             Enter to win a guaranteed prize
           </p>
           <form onSubmit={handleSubmit(submit)} className="mt-8 space-y-4">
-            <input className="input" placeholder="Name" {...register('name')} />
+            <input className="input" placeholder="First name" {...register('firstName')} />
+            <input className="input" placeholder="Last name" {...register('lastName')} />
             <input className="input" placeholder="E-mail" type="email" {...register('email')} />
             <button type="submit" className="btn-primary w-full">ENTER NOW</button>
           </form>
@@ -169,7 +170,7 @@ export default function App() {
     return <EntryForm onSubmit={async (user) => {
       setEntrant(user)
       try {
-        const res = await fetch('/api/draw', { method: 'POST' })
+        const res = await fetch('/api/draw', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(user) })
         const data = await res.json()
         setPrize(data?.prize?.name || 'Premium Cold Brew Token')
       } catch {}

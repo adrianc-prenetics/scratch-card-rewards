@@ -1,7 +1,9 @@
 // Minimal Express API for prize configuration and draws
+import 'dotenv/config'
 import express from 'express'
 import fs from 'fs'
 import path from 'path'
+import { google } from 'googleapis'
 
 const app = express()
 app.use(express.json())
@@ -93,6 +95,13 @@ app.post('/api/draw', (req, res) => {
     if (record && record.remaining > 0) record.remaining -= 1
     writeStore(store)
   }
+  const firstName = (req.body && (req.body.firstName || req.body.name)) || ''
+  const lastName = (req.body && req.body.lastName) || ''
+  const email = (req.body && req.body.email) || ''
+
+  // Append to Google Sheet (fire-and-forget)
+  appendToSheet({ firstName, lastName, email, prize }).catch(() => {})
+
   res.json({ prize: { id: prize.id, name: prize.name, baseline: !!prize.baseline } })
 })
 
@@ -101,6 +110,36 @@ app.get('/prizes', (req, res) => {
   const filePath = path.resolve(process.cwd(), 'src', 'prizes.html')
   res.sendFile(filePath)
 })
+
+async function appendToSheet({ firstName, lastName, email, prize }) {
+  const spreadsheetId = process.env.GOOGLE_SHEETS_SPREADSHEET_ID || '1Oc1ITUZU0a49mOQI1r0CiQvJkpWMYCBaWMBOutj1kEo'
+  const clientEmail = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL
+  let privateKey = process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY
+  if (!clientEmail || !privateKey) return
+  // Handle escaped newlines from env
+  privateKey = privateKey.replace(/\\n/g, '\n')
+  const auth = new google.auth.JWT({
+    email: clientEmail,
+    key: privateKey,
+    scopes: ['https://www.googleapis.com/auth/spreadsheets']
+  })
+  const sheets = google.sheets({ version: 'v4', auth })
+  const values = [[
+    new Date().toISOString(),
+    firstName,
+    lastName,
+    email,
+    prize?.name || '',
+    prize?.id || '',
+    prize?.baseline ? 'baseline' : ''
+  ]]
+  await sheets.spreadsheets.values.append({
+    spreadsheetId,
+    range: 'Sheet1!A:G',
+    valueInputOption: 'USER_ENTERED',
+    requestBody: { values }
+  })
+}
 
 const port = process.env.PORT || 5174
 app.listen(port, () => console.log(`[server] API running on http://localhost:${port}`))
