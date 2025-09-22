@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2025-09-22T09:51:17.521Z",
+  "updatedAt": "2025-09-22T10:00:25.893Z",
   "prizes": [
     {
       "id": "discount",
@@ -10,19 +10,19 @@
     },
     {
       "id": "hat",
-      "name": "Hat",
+      "name": "IM8 Limited Edition Embroidered Logo Cap",
       "remaining": 1000,
       "total": 1000
     },
     {
       "id": "sixpack",
-      "name": "Six Pack",
-      "remaining": 499,
+      "name": "Daily Ultimate Essentials 6 Sticks Pack",
+      "remaining": 496,
       "total": 500
     },
     {
       "id": "kit",
-      "name": "Daily Essentials Kit",
+      "name": "Daily Ultimate Essentials Kit",
       "remaining": 10,
       "total": 10
     }

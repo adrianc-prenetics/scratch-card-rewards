@@ -16,9 +16,9 @@ function ensureStore() {
       updatedAt: new Date().toISOString(),
       prizes: [
         { id: 'discount', name: '10% off first order', remaining: -1, total: -1, baseline: true },
-        { id: 'hat', name: 'Hat', remaining: 1000, total: 1000 },
-        { id: 'sixpack', name: 'Six Pack', remaining: 500, total: 500 },
-        { id: 'kit', name: 'Daily Essentials Kit', remaining: 10, total: 10 },
+        { id: 'hat', name: 'IM8 Limited Edition Embroidered Logo Cap', remaining: 1000, total: 1000 },
+        { id: 'sixpack', name: 'Daily Ultimate Essentials 6 Sticks Pack', remaining: 500, total: 500 },
+        { id: 'kit', name: 'Daily Ultimate Essentials Kit', remaining: 10, total: 10 },
       ],
     }
     fs.writeFileSync(dataFile, JSON.stringify(initial, null, 2))
@@ -94,6 +94,12 @@ app.post('/api/draw', (req, res) => {
     writeStore(store)
   }
   res.json({ prize: { id: prize.id, name: prize.name, baseline: !!prize.baseline } })
+})
+
+// Serve the simple dashboard HTML at /prizes (via Vite proxy)
+app.get('/prizes', (req, res) => {
+  const filePath = path.resolve(process.cwd(), 'src', 'prizes.html')
+  res.sendFile(filePath)
 })
 
 const port = process.env.PORT || 5174
