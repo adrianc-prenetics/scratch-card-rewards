@@ -1,0 +1,143 @@
+@import "tailwindcss";
+
+/* Design tokens and premium base layer */
+@font-face {
+  font-family: 'Arizona Flare';
+  src: url('https://cdn.shopify.com/s/files/1/0637/4460/6375/files/ABCArizonaFlare-Regular.woff?v=1720189870') format('woff');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Aeonik';
+  src: url('https://cdn.shopify.com/s/files/1/0637/4460/6375/files/aeonik_regular-webfont.woff2?v=1720189985') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@theme {
+  --font-display: 'Arizona Flare', ui-sans-serif, system-ui, Inter, Avenir, Helvetica, Arial;
+  --font-body: 'Aeonik', ui-sans-serif, system-ui, Inter, Avenir, Helvetica, Arial;
+}
+
+:root {
+  --brand-primary: #A40011; /* deep crimson */
+  --brand-secondary: #50000B; /* oxblood */
+  --brand-sand: #F5EAEA; /* sand */
+  --brand-beige: #FFE9D8; /* beige */
+}
+
+/* Global layout */
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  color: #ffffff;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-family: var(--font-body);
+  background:
+    radial-gradient(1000px 520px at 20% -10%, rgba(164,0,17,0.12), transparent 60%),
+    radial-gradient(900px 500px at 85% -5%, rgba(80,0,11,0.10), transparent 55%),
+    linear-gradient(180deg, #fff 0%, #F5EAEA 55%, #FFE9D8 100%);
+}
+
+.glass {
+  @apply backdrop-blur-2xl shadow-[0_10px_30px_rgba(164,0,17,0.08)];
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(80, 0, 11, 0.15);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.45), 0 10px 30px rgba(164,0,17,0.08);
+  color: var(--brand-secondary);
+}
+
+.btn-primary {
+  @apply inline-flex items-center justify-center rounded-xl px-5 py-3 text-base font-medium text-white shadow-[0_10px_30px_rgba(2,6,23,0.12)] transition-all duration-300 active:scale-[0.99];
+  background-image: linear-gradient(90deg, var(--brand-primary), var(--brand-secondary));
+}
+.btn-primary:hover { filter: brightness(1.05); }
+
+.input {
+  @apply w-full rounded-xl border px-4 py-3 focus:outline-none focus:ring-2;
+  background: rgba(255,255,255,0.9);
+  color: var(--brand-secondary);
+  border-color: rgba(80, 0, 11, 0.18);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.6);
+}
+.input::placeholder { color: rgba(80,0,11,0.55); opacity: 1; }
+.input:focus { box-shadow: 0 0 0 6px rgba(164,0,17,0.18); }
+
+.headline {
+  @apply text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight;
+  font-family: var(--font-display);
+}
+
+.text-brand-primary { color: var(--brand-primary); }
+.text-brand-dark { color: var(--brand-secondary); }
+
+.hashtag {
+  display: inline-block;
+  padding: 6px 14px;
+  border-radius: 9999px;
+  background: linear-gradient(90deg, rgba(164,0,17,0.95), rgba(80,0,11,0.95));
+  color: #fff;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-weight: 700;
+  font-size: 0.8rem;
+  box-shadow: 0 10px 20px rgba(164,0,17,0.15);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+}
+@media (min-width: 768px) {
+  .hashtag { font-size: 0.9rem; }
+}
+
+.prize-card {
+  background: rgba(255,255,255,0.95);
+  color: var(--brand-secondary);
+  border: 2px solid var(--brand-sand);
+  border-radius: 1rem;
+  box-shadow: 0 6px 20px rgba(80,0,11,0.07), inset 0 1px 0 rgba(255,255,255,0.6);
+}
+
+.prize-frame {
+  position: relative;
+  border-radius: 1.25rem;
+  background: linear-gradient(180deg, rgba(255,255,255,0.95), rgba(255,233,216,0.95));
+  border: 2px solid var(--brand-sand);
+  box-shadow: 0 10px 30px rgba(80,0,11,0.08), inset 0 1px 0 rgba(255,255,255,0.6);
+  overflow: hidden;
+}
+.prize-shell { padding: 0; }
+.prize-overlay {
+  position: relative;
+  border-radius: 1.25rem;
+  min-height: 220px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(180deg, rgba(255,255,255,0.985), rgba(255,233,216,0.985));
+  border: 1px solid rgba(80,0,11,0.1);
+  overflow: hidden;
+  width: 100%;
+}
+
+/* Force the library canvas to fill its container at all times */
+.prize-overlay canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  border-radius: inherit;
+}
+
+@media (min-width: 1024px) {
+  .headline {
+    font-size: 3.3rem;
+    line-height: 150%;
+  }
+}
+
+.subhead {
+  @apply text-sm md:text-base;
+  color: rgba(80,0,11,0.75);
+}
