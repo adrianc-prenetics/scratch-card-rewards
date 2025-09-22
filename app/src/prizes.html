@@ -1,0 +1,69 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Prizes</title>
+    <link rel="stylesheet" href="/src/index.css" />
+  </head>
+  <body class="min-h-dvh bg-slate-50 text-black">
+    <div id="app" class="max-w-2xl mx-auto p-6">
+      <h1 class="headline text-brand-dark">Prize Settings</h1>
+      <p class="subhead mt-2">Update totals and remaining. Baseline prizes have unlimited supply.</p>
+      <form id="prizeForm" class="mt-6 space-y-4"></form>
+      <div class="mt-6">
+        <button id="saveBtn" class="btn-primary">Save</button>
+      </div>
+      <pre id="status" class="mt-4 text-xs text-brand-dark"></pre>
+    </div>
+    <script type="module">
+      async function load() {
+        const res = await fetch('/api/prizes')
+        const data = await res.json()
+        const form = document.getElementById('prizeForm')
+        form.innerHTML = ''
+        data.prizes.forEach(p => {
+          const row = document.createElement('div')
+          row.className = 'glass rounded-xl p-4'
+          row.innerHTML = `
+            <div class="font-semibold mb-2">${p.name} (${p.id})${p.baseline ? ' — baseline' : ''}</div>
+            <div class="grid grid-cols-2 gap-4">
+              <label class="text-sm">
+                <div>Total</div>
+                <input type="number" class="input" name="total-${p.id}" value="${p.total}" ${p.remaining===-1||p.baseline?'disabled':''}/>
+              </label>
+              <label class="text-sm">
+                <div>Remaining</div>
+                <input type="number" class="input" name="remaining-${p.id}" value="${p.remaining}" ${p.remaining===-1||p.baseline?'disabled':''}/>
+              </label>
+            </div>
+          `
+          form.appendChild(row)
+        })
+      }
+
+      document.getElementById('saveBtn').addEventListener('click', async (e) => {
+        e.preventDefault()
+        const res = await fetch('/api/prizes')
+        const data = await res.json()
+        const payload = { prizes: [] }
+        data.prizes.forEach(p => {
+          const total = document.querySelector(`[name=total-${p.id}]`)
+          const remaining = document.querySelector(`[name=remaining-${p.id}]`)
+          const entry = { id: p.id }
+          if (total && !total.disabled) entry.total = parseInt(total.value, 10)
+          if (remaining && !remaining.disabled) entry.remaining = parseInt(remaining.value, 10)
+          payload.prizes.push(entry)
+        })
+        const r = await fetch('/api/prizes', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+        const updated = await r.json()
+        document.getElementById('status').textContent = JSON.stringify(updated, null, 2)
+        load()
+      })
+
+      load()
+    </script>
+  </body>
+  </html>
+
+

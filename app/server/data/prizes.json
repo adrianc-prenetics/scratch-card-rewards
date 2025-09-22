@@ -1,0 +1,30 @@
+{
+  "updatedAt": "2025-09-22T09:51:17.521Z",
+  "prizes": [
+    {
+      "id": "discount",
+      "name": "10% off first order",
+      "remaining": -1,
+      "total": -1,
+      "baseline": true
+    },
+    {
+      "id": "hat",
+      "name": "Hat",
+      "remaining": 1000,
+      "total": 1000
+    },
+    {
+      "id": "sixpack",
+      "name": "Six Pack",
+      "remaining": 499,
+      "total": 500
+    },
+    {
+      "id": "kit",
+      "name": "Daily Essentials Kit",
+      "remaining": 10,
+      "total": 10
+    }
+  ]
+}

@@ -50,8 +50,8 @@ function EntryForm({ onSubmit }) {
             Enter to win a guaranteed prize
           </p>
           <form onSubmit={handleSubmit(submit)} className="mt-8 space-y-4">
-            <input className="input" placeholder="NAME" {...register('name')} />
-            <input className="input" placeholder="E-MAIL" type="email" {...register('email')} />
+            <input className="input" placeholder="Name" {...register('name')} />
+            <input className="input" placeholder="E-mail" type="email" {...register('email')} />
             <button type="submit" className="btn-primary w-full">ENTER NOW</button>
           </form>
         </div>
@@ -163,10 +163,17 @@ function Congrats({ prize, onShare }) {
 
 export default function App() {
   const [entrant, setEntrant] = useState(null)
-  const [prize] = useState('Premium Cold Brew Token')
+  const [prize, setPrize] = useState('Premium Cold Brew Token')
 
   if (!entrant) {
-    return <EntryForm onSubmit={setEntrant} />
+    return <EntryForm onSubmit={async (user) => {
+      setEntrant(user)
+      try {
+        const res = await fetch('/api/draw', { method: 'POST' })
+        const data = await res.json()
+        setPrize(data?.prize?.name || 'Premium Cold Brew Token')
+      } catch {}
+    }} />
   }
   return <Congrats prize={prize} onShare={() => {}} />
 }
