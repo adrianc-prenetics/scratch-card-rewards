@@ -167,6 +167,11 @@ body {
   backdrop-filter: saturate(105%);
 }
 
+@media (max-width: 480px) {
+  .prize-overlay { min-height: 48dvh; }
+  .prize-overlay canvas { height: 100% !important; }
+}
+
 /* Force the library canvas to fill its container at all times */
 .prize-overlay canvas {
   position: absolute;

@@ -11,7 +11,7 @@ function GradientLogoBar() {
         <img src="/images/token-2049-logo.png" alt="TOKEN 2049 logo" className="h-6 md:h-7 object-contain" />
       </div>
       <div className="glass rounded-xl py-2 md:py-3 flex items-center justify-center">
-        <img src="/src/assets/im8-logo.svg" alt="IM8 logo" className="h-6 md:h-7 object-contain" />
+        <img src="/images/im8-logo.svg" alt="IM8 logo" className="h-6 md:h-7 object-contain" />
       </div>
     </div>
   )
