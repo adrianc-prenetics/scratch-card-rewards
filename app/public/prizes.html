@@ -55,11 +55,11 @@
             <div class="grid grid-cols-2 gap-4">
               <label class="text-sm">
                 <div>Total</div>
-                <input type="number" class="input" name="total-${p.id}" value="${p.total}" ${p.remaining===-1||p.baseline?'disabled':''}/>
+                <input type="number" class="input" name="total-${p.id}" value="${p.total === -1 ? '' : p.total}" placeholder="Unlimited (-1)" />
               </label>
               <label class="text-sm">
                 <div>Remaining</div>
-                <input type="number" class="input" name="remaining-${p.id}" value="${p.remaining}" ${p.remaining===-1||p.baseline?'disabled':''}/>
+                <input type="number" class="input" name="remaining-${p.id}" value="${p.remaining === -1 ? '' : p.remaining}" placeholder="Unlimited (-1)" />
               </label>
             </div>
           `
@@ -76,8 +76,14 @@
           const total = document.querySelector(`[name=total-${p.id}]`)
           const remaining = document.querySelector(`[name=remaining-${p.id}]`)
           const entry = { id: p.id }
-          if (total && !total.disabled) entry.total = parseInt(total.value, 10)
-          if (remaining && !remaining.disabled) entry.remaining = parseInt(remaining.value, 10)
+          if (total) {
+            const v = (total.value ?? '').trim()
+            entry.total = v === '' ? -1 : parseInt(v, 10)
+          }
+          if (remaining) {
+            const v = (remaining.value ?? '').trim()
+            entry.remaining = v === '' ? -1 : parseInt(v, 10)
+          }
           payload.prizes.push(entry)
         })
         const r = await fetch('/api/prizes', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
