@@ -2,13 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import './index.css'
 import Scratch from '@kiefer/scratch'
 import confetti from 'canvas-confetti'
-import { useForm } from 'react-hook-form'
 import { z } from 'zod'
-
-const FormSchema = z.object({
-  name: z.string().min(1),
-  email: z.string().email(),
-})
 
 function GradientLogoBar() {
   return (
@@ -23,18 +17,7 @@ function GradientLogoBar() {
   )
 }
 
-function EntryForm({ onSubmit }) {
-  const { register, handleSubmit } = useForm({
-    defaultValues: { firstName: '', lastName: '', email: '' },
-    mode: 'onSubmit',
-  })
-
-  const submit = (values) => {
-    const parsed = z.object({ firstName: z.string().min(1), lastName: z.string().min(1), email: z.string().email() }).safeParse(values)
-    if (!parsed.success) return
-    onSubmit(parsed.data)
-  }
-
+function EntryForm({ onVerify }) {
   return (
     <div className="min-h-dvh flex items-center justify-center px-4 py-8">
       <div className="w-full max-w-xl space-y-8">
@@ -46,15 +29,12 @@ function EntryForm({ onSubmit }) {
               <span className="hashtag">#FueltheChain</span>
             </div>
           </div>
-          <p className="text-center text-sm md:text-base subhead mt-6">
-            Enter to win a guaranteed prize
+          <p className="text-center text-sm md:text-base subhead desc-cta mt-6">
+            Follow @IM8health on X to win a guaranteed prize
           </p>
-          <form onSubmit={handleSubmit(submit)} className="mt-8 space-y-4">
-            <input className="input" placeholder="First name" {...register('firstName')} />
-            <input className="input" placeholder="Last name" {...register('lastName')} />
-            <input className="input" placeholder="E-mail" type="email" {...register('email')} />
-            <button type="submit" className="btn-primary w-full">ENTER NOW</button>
-          </form>
+          <div className="mt-8 space-y-4">
+            <button className="btn-primary btn-premium w-full" onClick={onVerify}>ENTER NOW</button>
+          </div>
         </div>
       </div>
     </div>
@@ -163,17 +143,24 @@ function Congrats({ prize, onShare }) {
 }
 
 export default function App() {
-  const [entrant, setEntrant] = useState(null)
+  const [verified, setVerified] = useState(false)
   const [prize, setPrize] = useState('Premium Cold Brew Token')
+  const apiBase = import.meta.env.VITE_API_BASE_URL || ''
 
-  if (!entrant) {
-    return <EntryForm onSubmit={async (user) => {
-      setEntrant(user)
+  if (!verified) {
+    return <EntryForm onVerify={async () => {
       try {
-        const res = await fetch('/api/draw', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(user) })
+        // Placeholder: open X follow intent in a new window.
+        const handle = 'IM8health'
+        const win = window.open(`https://twitter.com/intent/follow?screen_name=${handle}`, '_blank', 'noopener,noreferrer')
+        // In a real flow, you would verify via backend OAuth; here we trust user action.
+      } catch {}
+      try {
+        const res = await fetch(`${apiBase}/api/draw`, { method: 'POST', headers: { 'Content-Type': 'application/json' } })
         const data = await res.json()
         setPrize(data?.prize?.name || 'Premium Cold Brew Token')
       } catch {}
+      setVerified(true)
     }} />
   }
   return <Congrats prize={prize} onShare={() => {}} />

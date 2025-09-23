@@ -10,6 +10,11 @@ export default defineConfig({
         target: 'http://localhost:5174',
         changeOrigin: true,
       },
+      // Proxy the admin dashboard route to the Express server
+      '/prizes': {
+        target: 'http://localhost:5174',
+        changeOrigin: true,
+      },
     },
   },
 })

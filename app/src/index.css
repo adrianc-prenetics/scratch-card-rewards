@@ -30,6 +30,7 @@
 /* Global layout */
 html, body, #root {
   height: 100%;
+  min-height: 100dvh;
 }
 
 body {
@@ -41,6 +42,15 @@ body {
     radial-gradient(1000px 520px at 20% -10%, rgba(164,0,17,0.12), transparent 60%),
     radial-gradient(900px 500px at 85% -5%, rgba(80,0,11,0.10), transparent 55%),
     linear-gradient(180deg, #fff 0%, #F5EAEA 55%, #FFE9D8 100%);
+  background-attachment: fixed, fixed, fixed;
+  background-repeat: no-repeat;
+  background-size: 100% 100%, 100% 100%, 100% 100%;
+}
+
+/* iOS/Safari viewport fix to ensure gradient reaches the bottom */
+@supports (-webkit-touch-callout: none) {
+  html { height: -webkit-fill-available; }
+  body { min-height: -webkit-fill-available; }
 }
 
 .glass {
@@ -56,6 +66,36 @@ body {
   background-image: linear-gradient(90deg, var(--brand-primary), var(--brand-secondary));
 }
 .btn-primary:hover { filter: brightness(1.05); }
+
+/* Elevated premium hover with soft inner glow and sheen */
+.btn-premium {
+  position: relative;
+  overflow: hidden;
+}
+.btn-premium::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(120% 80% at 10% 10%, rgba(255,255,255,0.18), rgba(255,255,255,0) 40%), linear-gradient(120deg, rgba(255,255,255,0.0) 0%, rgba(255,255,255,0.22) 35%, rgba(255,255,255,0.0) 70%);
+  opacity: 0;
+  transition: opacity .3s ease, transform .6s ease;
+}
+.btn-premium:hover::before { opacity: 1; transform: translate3d(2px,0,0); }
+.btn-premium:hover { box-shadow: 0 16px 40px rgba(164,0,17,0.25); }
+
+/* Make the follow description a tad more prominent without losing body tone */
+.desc-cta {
+  color: rgba(80,0,11,0.88);
+  letter-spacing: .005em;
+}
+
+/* Subtle ambient vignette around primary cards */
+.glass {
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.45), 0 10px 30px rgba(164,0,17,0.10), 0 40px 60px rgba(80,0,11,0.06);
+}
+
+/* Micro-interaction on cards */
+.glass:hover { transform: translateY(-1px); transition: transform .25s ease, box-shadow .25s ease; }
 
 .input {
   @apply w-full rounded-xl border px-4 py-3 focus:outline-none focus:ring-2;
@@ -132,6 +172,7 @@ body {
   position: absolute;
   inset: 0;
   width: 100%;
+  height: 100%;
   border-radius: inherit;
 }
 
