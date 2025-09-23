@@ -187,19 +187,36 @@ app.post('/api/draw', async (req, res) => {
     const nonBaseline = available.filter(p => !p.baseline && (p.remaining === -1 || p.remaining > 0))
     const baseline = available.find(p => p.baseline) || prizes.find(p => p.baseline)
 
-    // Weighted random including the baseline so it appears frequently
-    // Configure baseline weight via BASELINE_WEIGHT (default 1000)
-    const baselineWeight = Math.max(1, Number(process.env.BASELINE_WEIGHT || 1000))
-    const pool = []
+    // Improved weighting:
+    // - Guarantee baseline at least BASELINE_MIN_PROB (default 0.5)
+    // - Temper limited weights by PRIZE_TEMPERATURE (default 0.5 => sqrt) for better variety
+    const temperature = Math.max(0.25, Math.min(1, Number(process.env.PRIZE_TEMPERATURE || 0.5)))
+    const weightOf = (p) => {
+      if (p.remaining === -1) return 1
+      const w = Math.pow(Math.max(1, p.remaining), temperature)
+      return Math.max(1, Math.min(1000, Math.floor(w)))
+    }
+    const limitedWeights = nonBaseline.map(p => ({ p, w: weightOf(p) }))
+    const totalLimited = limitedWeights.reduce((s, x) => s + x.w, 0)
+    const minProb = Math.max(0.5, Math.min(0.95, Number(process.env.BASELINE_MIN_PROB || 0.5)))
+    let baselineWeight = Number(process.env.BASELINE_WEIGHT || 0)
+    if (!baselineWeight || baselineWeight <= 0) {
+      baselineWeight = Math.max(1, Math.ceil((minProb / (1 - minProb)) * (totalLimited || 1)))
+    }
+    const total = (baseline ? baselineWeight : 0) + totalLimited
+    let r = Math.random() * (total || 1)
     let prize
-    if (baseline) {
-      for (let i = 0; i < baselineWeight; i++) pool.push(baseline)
+    if (baseline && r < baselineWeight) {
+      prize = baseline
+    } else {
+      r -= (baseline ? baselineWeight : 0)
+      let acc = 0
+      for (const { p, w } of limitedWeights) {
+        acc += w
+        if (r <= acc) { prize = p; break }
+      }
+      if (!prize) prize = baseline || nonBaseline[0] || prizes[0]
     }
-    for (const p of nonBaseline) {
-      const weight = p.remaining === -1 ? 1 : Math.max(1, Math.min(1000, p.remaining))
-      for (let i = 0; i < weight; i++) pool.push(p)
-    }
-    prize = pool.length > 0 ? pool[Math.floor(Math.random() * pool.length)] : baseline
 
     if (prize && !prize.baseline && prize.remaining !== -1) {
       await decrementInventoryInSheet(prize.id)
