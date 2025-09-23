@@ -9,22 +9,25 @@ export default async function handler(req, res) {
   const prizesAll = await readInventory()
 
   const available = prizesAll.filter(p => (p.remaining === -1) || (p.remaining ?? 0) > 0)
-  const nonBaseline = available.filter(p => !p.baseline && (p.remaining === -1 || p.remaining > 0))
-  const baseline = available.find(p => p.baseline) || prizesAll.find(p => p.baseline)
-
-  let prize
-  if (nonBaseline.length > 0) {
-    const pool = []
-    for (const p of nonBaseline) {
-      const weight = p.remaining === -1 ? 1 : Math.max(1, Math.min(1000, p.remaining))
-      for (let i = 0; i < weight; i++) pool.push(p)
-    }
-    prize = pool[Math.floor(Math.random() * pool.length)]
-  } else {
-    prize = baseline
+  if (available.length === 0) return res.status(503).json({ error: 'sold_out' })
+  // Treat all prizes uniformly; weight by tempered remaining, unlimited uses UNLIMITED_WEIGHT
+  const temperature = 0.5
+  const unlimitedWeight = 1000
+  const weightOf = (p) => {
+    const base = p.remaining === -1 ? unlimitedWeight : Math.max(1, p.remaining)
+    return Math.max(1, Math.min(2000, Math.floor(Math.pow(base, temperature))))
+  }
+  const items = available.map(p => ({ p, w: weightOf(p) }))
+  const total = items.reduce((s, x) => s + x.w, 0)
+  let r = Math.random() * total
+  let acc = 0
+  let prize = items[0].p
+  for (const { p, w } of items) {
+    acc += w
+    if (r <= acc) { prize = p; break }
   }
 
-  if (prize && !prize.baseline && prize.remaining !== -1) {
+  if (prize && prize.remaining !== -1) {
     await decrementInventory(prize.id)
   }
 
