@@ -9,7 +9,7 @@
   <body class="min-h-dvh bg-slate-50 text-black" style="min-height:100dvh;background:radial-gradient(1000px 520px at 20% -10%, rgba(164,0,17,0.12), transparent 60%),radial-gradient(900px 500px at 85% -5%, rgba(80,0,11,0.10), transparent 55%),linear-gradient(180deg, #fff 0%, #F5EAEA 55%, #FFE9D8 100%);background-attachment:fixed;">
     <div id="app" class="max-w-2xl mx-auto p-6" style="min-height:100dvh;display:flex;flex-direction:column;">
       <h1 class="headline text-brand-dark">Prize Settings</h1>
-      <p class="subhead mt-2">Update totals and remaining. Baseline prizes have unlimited supply.</p>
+      <p class="subhead mt-2">Update totals and remaining. Use -1 to mark a prize as unlimited.</p>
       <form id="prizeForm" class="mt-6 space-y-4"></form>
       <div class="mt-6 flex items-center gap-3">
         <button id="saveBtn" class="btn-primary">Save</button>
@@ -83,6 +83,14 @@
           if (remaining) {
             const v = (remaining.value ?? '').trim()
             entry.remaining = v === '' ? -1 : parseInt(v, 10)
+          }
+          // If baseline and remaining left blank but total provided as finite, set remaining = total
+          if (p.baseline) {
+            const finiteTotal = (typeof entry.total === 'number' && entry.total >= 0)
+            const remainingUnset = (typeof entry.remaining !== 'number') || isNaN(entry.remaining)
+            if (finiteTotal && remainingUnset) {
+              entry.remaining = entry.total
+            }
           }
           payload.prizes.push(entry)
         })
