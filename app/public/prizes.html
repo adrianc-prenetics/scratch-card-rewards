@@ -80,17 +80,19 @@
             const v = (total.value ?? '').trim()
             entry.total = v === '' ? -1 : parseInt(v, 10)
           }
+          let remainingBlank = false
           if (remaining) {
             const v = (remaining.value ?? '').trim()
-            entry.remaining = v === '' ? -1 : parseInt(v, 10)
-          }
-          // If baseline and remaining left blank but total provided as finite, set remaining = total
-          if (p.baseline) {
-            const finiteTotal = (typeof entry.total === 'number' && entry.total >= 0)
-            const remainingUnset = (typeof entry.remaining !== 'number') || isNaN(entry.remaining)
-            if (finiteTotal && remainingUnset) {
-              entry.remaining = entry.total
+            if (v === '') {
+              remainingBlank = true
+            } else {
+              entry.remaining = parseInt(v, 10)
             }
+          }
+          // Baseline UX: if Remaining is blank and Total is finite, set Remaining = Total; if both blank, default to -1
+          if (p.baseline && remainingBlank) {
+            const finiteTotal = (typeof entry.total === 'number' && entry.total >= 0)
+            entry.remaining = finiteTotal ? entry.total : -1
           }
           payload.prizes.push(entry)
         })
