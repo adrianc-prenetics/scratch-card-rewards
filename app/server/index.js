@@ -184,41 +184,28 @@ app.post('/api/draw', async (req, res) => {
   try {
     const prizes = await readInventoryFromSheet()
     const available = prizes.filter(p => (p.remaining === -1) || (p.remaining ?? 0) > 0)
-    const nonBaseline = available.filter(p => !p.baseline && (p.remaining === -1 || p.remaining > 0))
-    const baseline = available.find(p => p.baseline) || prizes.find(p => p.baseline)
-
-    // Improved weighting:
-    // - Guarantee baseline at least BASELINE_MIN_PROB (default 0.5)
-    // - Temper limited weights by PRIZE_TEMPERATURE (default 0.5 => sqrt) for better variety
+    if (available.length === 0) {
+      return res.status(503).json({ error: 'sold_out' })
+    }
+    // Treat ALL prizes as normal counters – no special baseline behavior
     const temperature = Math.max(0.25, Math.min(1, Number(process.env.PRIZE_TEMPERATURE || 0.5)))
+    const unlimitedWeight = Math.max(1, Number(process.env.UNLIMITED_WEIGHT || 1000))
     const weightOf = (p) => {
-      if (p.remaining === -1) return 1
-      const w = Math.pow(Math.max(1, p.remaining), temperature)
-      return Math.max(1, Math.min(1000, Math.floor(w)))
+      const base = (p.remaining === -1) ? unlimitedWeight : Math.max(1, p.remaining)
+      const w = Math.pow(base, temperature)
+      return Math.max(1, Math.min(2000, Math.floor(w)))
     }
-    const limitedWeights = nonBaseline.map(p => ({ p, w: weightOf(p) }))
-    const totalLimited = limitedWeights.reduce((s, x) => s + x.w, 0)
-    const minProb = Math.max(0.5, Math.min(0.95, Number(process.env.BASELINE_MIN_PROB || 0.5)))
-    let baselineWeight = Number(process.env.BASELINE_WEIGHT || 0)
-    if (!baselineWeight || baselineWeight <= 0) {
-      baselineWeight = Math.max(1, Math.ceil((minProb / (1 - minProb)) * (totalLimited || 1)))
-    }
-    const total = (baseline ? baselineWeight : 0) + totalLimited
+    const items = available.map(p => ({ p, w: weightOf(p) }))
+    const total = items.reduce((s, x) => s + x.w, 0)
     let r = Math.random() * (total || 1)
-    let prize
-    if (baseline && r < baselineWeight) {
-      prize = baseline
-    } else {
-      r -= (baseline ? baselineWeight : 0)
-      let acc = 0
-      for (const { p, w } of limitedWeights) {
-        acc += w
-        if (r <= acc) { prize = p; break }
-      }
-      if (!prize) prize = baseline || nonBaseline[0] || prizes[0]
+    let acc = 0
+    let prize = items[0].p
+    for (const { p, w } of items) {
+      acc += w
+      if (r <= acc) { prize = p; break }
     }
 
-    if (prize && !prize.baseline && prize.remaining !== -1) {
+    if (prize && prize.remaining !== -1) {
       await decrementInventoryInSheet(prize.id)
     }
     return res.json({ prize: { id: prize.id, name: prize.name, baseline: !!prize.baseline } })
