@@ -22,7 +22,7 @@ function EntryForm({ onVerify }) {
     <div className="min-h-dvh flex items-center justify-center px-4 py-8">
       <div className="w-full max-w-xl space-y-8">
         <GradientLogoBar />
-        <div className="glass rounded-2xl p-6 md:p-10">
+      <div className="glass rounded-2xl p-6 md:p-10">
           <div className="space-y-3 text-center">
             <h1 className="headline text-brand-dark">Scratch, Sip, and Win</h1>
             <div className="flex items-center justify-center">
@@ -144,7 +144,8 @@ function Congrats({ prize, onShare }) {
 
 export default function App() {
   const [verified, setVerified] = useState(false)
-  const [prize, setPrize] = useState('Premium Cold Brew Token')
+  // Final fallback only: if logic fails, show baseline label
+  const [prize, setPrize] = useState('10% off first order')
   const apiBase = import.meta.env.VITE_API_BASE_URL || ''
 
   if (!verified) {
