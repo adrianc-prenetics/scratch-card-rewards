@@ -76,14 +76,11 @@ app.post('/api/prizes', async (req, res) => {
       for (const p of body.prizes) {
         if (!map[p.id]) map[p.id] = { id: p.id, name: '', total: 0, remaining: 0, baseline: false }
         if (typeof p.total === 'number') {
-          const diff = p.total - (map[p.id].total ?? 0)
           map[p.id].total = p.total
-          if (map[p.id].remaining !== -1) {
-            map[p.id].remaining = Math.max(0, (map[p.id].remaining ?? 0) + diff)
-          }
         }
-        if (typeof p.remaining === 'number' && map[p.id].remaining !== -1) {
-          map[p.id].remaining = Math.max(0, p.remaining)
+        // Allow changing from unlimited (-1) to a finite number and vice‑versa
+        if (typeof p.remaining === 'number') {
+          map[p.id].remaining = p.remaining < 0 ? -1 : Math.max(0, p.remaining)
         }
         if (typeof p.name === 'string') map[p.id].name = p.name
         if (typeof p.baseline === 'boolean') map[p.id].baseline = p.baseline
