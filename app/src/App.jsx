@@ -5,6 +5,7 @@ import confetti from 'canvas-confetti'
 import { z } from 'zod'
 
 const SCRATCH_COVER_SRC = '/images/Scratch-card.png'
+const SCRATCH_ASPECT_RATIO = 1028 / 1976
 
 function createGradientCover(width, height) {
   if (!width || !height) return null
@@ -90,7 +91,7 @@ function ScratchCard({ prize, onFullyRevealed }) {
     if (!el) return
     const measure = () => {
       const w = Math.round(el.getBoundingClientRect().width)
-      const h = Math.round(w * 0.52)
+      const h = Math.round(w * SCRATCH_ASPECT_RATIO)
       if (w !== dim.width || h !== dim.height) setDim({ width: w, height: h })
     }
     measure()
