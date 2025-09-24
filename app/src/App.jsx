@@ -1,8 +1,47 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import './index.css'
 import Scratch from '@kiefer/scratch'
 import confetti from 'canvas-confetti'
 import { z } from 'zod'
+
+const SCRATCH_COVER_SRC = '/images/Scratch-card.png'
+
+function createGradientCover(width, height) {
+  if (!width || !height) return null
+  const canvas = document.createElement('canvas')
+  canvas.width = width
+  canvas.height = height
+  const ctx = canvas.getContext('2d')
+  if (!ctx) return null
+  const gradient = ctx.createLinearGradient(0, 0, width, height)
+  gradient.addColorStop(0, '#A40011')
+  gradient.addColorStop(1, '#50000B')
+  ctx.fillStyle = gradient
+  ctx.fillRect(0, 0, width, height)
+  return canvas.toDataURL()
+}
+
+function createImageCover(img, width, height) {
+  if (!img || !width || !height) return null
+  const canvas = document.createElement('canvas')
+  canvas.width = width
+  canvas.height = height
+  const ctx = canvas.getContext('2d')
+  if (!ctx) return null
+
+  const naturalWidth = img.naturalWidth || img.width
+  const naturalHeight = img.naturalHeight || img.height
+  if (!naturalWidth || !naturalHeight) return null
+
+  const scale = Math.max(width / naturalWidth, height / naturalHeight)
+  const drawWidth = naturalWidth * scale
+  const drawHeight = naturalHeight * scale
+  const offsetX = (width - drawWidth) / 2
+  const offsetY = (height - drawHeight) / 2
+
+  ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight)
+  return canvas.toDataURL()
+}
 
 function GradientLogoBar() {
   return (
@@ -44,6 +83,7 @@ function EntryForm({ onVerify }) {
 function ScratchCard({ prize, onFullyRevealed }) {
   const frameRef = useRef(null)
   const [dim, setDim] = useState({ width: 0, height: 0 })
+  const [coverData, setCoverData] = useState(null)
 
   useEffect(() => {
     const el = frameRef.current
@@ -59,18 +99,43 @@ function ScratchCard({ prize, onFullyRevealed }) {
     return () => ro.disconnect()
   }, [])
 
-  const coverData = useMemo(() => {
-    const c = document.createElement('canvas')
-    c.width = dim.width
-    c.height = dim.height
-    const ctx = c.getContext('2d')
-    const g = ctx.createLinearGradient(0, 0, dim.width, dim.height)
-    g.addColorStop(0, '#A40011')
-    g.addColorStop(1, '#50000B')
-    ctx.fillStyle = g
-    ctx.fillRect(0, 0, dim.width, dim.height)
-    return c.toDataURL()
-  }, [dim.width, dim.height])
+  const fallbackCover = useMemo(() => createGradientCover(dim.width, dim.height), [dim.width, dim.height])
+
+  useEffect(() => {
+    if (!dim.width || !dim.height) {
+      setCoverData(null)
+      return
+    }
+
+    let cancelled = false
+
+    const img = new Image()
+    img.src = SCRATCH_COVER_SRC
+
+    const handleLoad = () => {
+      if (cancelled) return
+      const cover = createImageCover(img, dim.width, dim.height)
+      setCoverData(cover || fallbackCover)
+    }
+
+    const handleError = () => {
+      if (cancelled) return
+      setCoverData(fallbackCover)
+    }
+
+    if (img.complete && img.naturalWidth) {
+      handleLoad()
+    } else {
+      img.onload = handleLoad
+      img.onerror = handleError
+    }
+
+    return () => {
+      cancelled = true
+      img.onload = null
+      img.onerror = null
+    }
+  }, [dim.width, dim.height, fallbackCover])
 
   return (
     <div className="w-full flex items-center justify-center">
@@ -79,7 +144,7 @@ function ScratchCard({ prize, onFullyRevealed }) {
           <div className="relative z-[1] px-8 text-center">
             <div className="text-3xl md:text-4xl font-semibold leading-snug text-brand-dark">{prize}</div>
           </div>
-          {dim.width > 0 && (
+          {dim.width > 0 && coverData && (
             <Scratch
               key={`${dim.width}x${dim.height}`}
               id="scratch-card"
