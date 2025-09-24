@@ -30,7 +30,7 @@ function EntryForm({ onVerify }) {
             </div>
           </div>
           <p className="text-center text-sm md:text-base subhead desc-cta mt-6">
-            Follow @IM8health on X to win a guaranteed prize
+            Follow <span className="font-semibold">@IM8health</span> on X to win a guaranteed prize
           </p>
           <div className="mt-8 space-y-4">
             <button className="btn-primary btn-premium w-full" onClick={onVerify}>ENTER NOW</button>

@@ -86,7 +86,11 @@ body {
 /* Make the follow description a tad more prominent without losing body tone */
 .desc-cta {
   color: rgba(80,0,11,0.88);
-  letter-spacing: .005em;
+  letter-spacing: 0;
+  font-size: 16px !important;
+}
+@media (min-width: 768px) {
+  .desc-cta { font-size: 18px !important; }
 }
 
 /* Subtle ambient vignette around primary cards */
