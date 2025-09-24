@@ -50,7 +50,7 @@ function ScratchCard({ prize, onFullyRevealed }) {
     if (!el) return
     const measure = () => {
       const w = Math.round(el.getBoundingClientRect().width)
-      const h = Math.round(w * 0.5) // keep 2:1 aspect ratio
+      const h = Math.round(w * 0.52)
       if (w !== dim.width || h !== dim.height) setDim({ width: w, height: h })
     }
     measure()
@@ -59,56 +59,29 @@ function ScratchCard({ prize, onFullyRevealed }) {
     return () => ro.disconnect()
   }, [])
 
-  const [coverData, setCoverData] = useState(null)
-  useEffect(() => {
-    if (!dim.width || !dim.height) return
-    let cancelled = false
-    const img = new Image()
-    img.src = `/images/scratch.png?cb=${Date.now()}`
-    img.onload = () => {
-      if (cancelled) return
-      const c = document.createElement('canvas')
-      c.width = dim.width
-      c.height = dim.height
-      const ctx = c.getContext('2d')
-      const sw = img.width
-      const sh = img.height
-      // Use cover to remove gaps entirely
-      const scale = Math.max(dim.width / sw, dim.height / sh)
-      const dw = Math.ceil(sw * scale)
-      const dh = Math.ceil(sh * scale)
-      // Align so that the bottom-right of the image is always visible
-      const dx = dw > dim.width ? (dim.width - dw) : 0
-      const dy = dh > dim.height ? (dim.height - dh) : 0
-      ctx.drawImage(img, dx, dy, dw, dh)
-      setCoverData(c.toDataURL())
-    }
-    img.onerror = () => {
-      // Fallback gradient
-      const c = document.createElement('canvas')
-      c.width = dim.width
-      c.height = dim.height
-      const ctx = c.getContext('2d')
-      const g = ctx.createLinearGradient(0, 0, dim.width, dim.height)
-      g.addColorStop(0, '#A40011')
-      g.addColorStop(1, '#50000B')
-      ctx.fillStyle = g
-      ctx.fillRect(0, 0, dim.width, dim.height)
-      setCoverData(c.toDataURL())
-    }
-    return () => { cancelled = true }
+  const coverData = useMemo(() => {
+    const c = document.createElement('canvas')
+    c.width = dim.width
+    c.height = dim.height
+    const ctx = c.getContext('2d')
+    const g = ctx.createLinearGradient(0, 0, dim.width, dim.height)
+    g.addColorStop(0, '#A40011')
+    g.addColorStop(1, '#50000B')
+    ctx.fillStyle = g
+    ctx.fillRect(0, 0, dim.width, dim.height)
+    return c.toDataURL()
   }, [dim.width, dim.height])
 
   return (
     <div className="w-full flex items-center justify-center">
-      <div ref={frameRef} className="prize-frame w-full max-w-[36rem]" style={{ height: dim.height }}>
-        <div className="prize-overlay" style={{ height: '100%' }}>
+      <div ref={frameRef} className="prize-frame w-full max-w-[36rem]">
+        <div className="prize-overlay">
           <div className="relative z-[1] px-8 text-center">
             <div className="text-3xl md:text-4xl font-semibold leading-snug text-brand-dark">{prize}</div>
           </div>
-          {dim.width > 0 && coverData && (
+          {dim.width > 0 && (
             <Scratch
-              key={`${dim.width}x${dim.height}:${coverData?.length || 0}`}
+              key={`${dim.width}x${dim.height}`}
               id="scratch-card"
               width={dim.width}
               height={dim.height}
