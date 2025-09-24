@@ -180,11 +180,10 @@ function Congrats({ prize, onShare }) {
           <div className="flex items-center justify-center mt-4">
             <span className="hashtag">#FueltheChain</span>
           </div>
-          <p className="subhead text-center mt-4">Scratch to reveal your prize</p>
           <div className="mt-6">
             <ScratchCard prize={prize} onFullyRevealed={() => setRevealed(true)} />
           </div>
-          <div className="text-center text-sm md:text-base mt-8 space-y-2" style={{color:'#50000B', fontWeight:400}}>
+          <div className="text-center text-sm md:text-base mt-8 space-y-0 [&>p]:m-0" style={{color:'#50000B', fontWeight:400}}>
             <p>Show this screen to staff at the IM8 booth to claim your prize.</p>
             <p>Share a Tweet for bonus prize! <span className="font-semibold">#FueltheChain</span></p>
           </div>
