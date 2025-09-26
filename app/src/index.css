@@ -197,6 +197,23 @@ body {
   background: radial-gradient(120% 60% at 10% 0%, rgba(255,255,255,0.55), rgba(255,255,255,0) 55%), linear-gradient(to bottom, rgba(255,255,255,0.12), rgba(255,255,255,0) 40%);
 }
 
+.prize-text {
+  font-size: 24px;
+  line-height: 120%;
+}
+
+@media (min-width: 640px) {
+  .prize-text {
+    font-size: 28px;
+  }
+}
+
+@media (min-width: 768px) {
+  .prize-text {
+    font-size: 32px;
+  }
+}
+
 @media (min-width: 1024px) {
   .headline {
     font-size: 3.3rem;

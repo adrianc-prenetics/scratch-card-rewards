@@ -7,6 +7,15 @@ import { z } from 'zod'
 const SCRATCH_COVER_SRC = '/images/Scratch-card.png'
 const SCRATCH_ASPECT_RATIO = 1028 / 1976
 
+function formatPrizeName(name) {
+  if (!name) return ''
+  const normalized = name.trim().toLowerCase()
+  if (normalized.startsWith('10% off first order')) {
+    return '10% off first order: TOKEN10'
+  }
+  return name
+}
+
 function createGradientCover(width, height) {
   if (!width || !height) return null
   const canvas = document.createElement('canvas')
@@ -65,8 +74,10 @@ function EntryForm({ onVerify }) {
       <div className="glass rounded-2xl p-6 md:p-10">
           <div className="space-y-3 text-center">
             <h1 className="headline text-brand-dark">Scratch, Sip, and Win</h1>
-            <div className="flex items-center justify-center">
-              <span className="hashtag">#FueltheChain</span>
+            <div className="flex flex-wrap items-center justify-center gap-2">
+              <span className="hashtag">#HealthandWealth</span>
+              <span className="hashtag">#IM8</span>
+              <span className="hashtag">#Token2049</span>
             </div>
           </div>
           <p className="text-center text-sm md:text-base subhead desc-cta mt-6">
@@ -143,7 +154,7 @@ function ScratchCard({ prize, onFullyRevealed }) {
       <div ref={frameRef} className="prize-frame w-full max-w-[36rem]">
         <div className="prize-overlay">
           <div className="relative z-[1] px-8 text-center">
-            <div className="text-3xl md:text-4xl font-semibold leading-snug text-brand-dark">{prize}</div>
+            <div className="prize-text font-semibold text-brand-dark">{prize}</div>
           </div>
           {dim.width > 0 && coverData && (
             <Scratch
@@ -177,19 +188,23 @@ function Congrats({ prize, onShare }) {
         <GradientLogoBar />
         <div className="glass rounded-2xl p-6 md:p-10">
           <h2 className="headline text-center text-brand-dark">Congratulations!</h2>
-          <div className="flex items-center justify-center mt-4">
-            <span className="hashtag">#FueltheChain</span>
+          <div className="flex flex-wrap items-center justify-center mt-4 gap-2">
+            <span className="hashtag">#HealthandWealth</span>
+            <span className="hashtag">#IM8</span>
+            <span className="hashtag">#Token2049</span>
           </div>
           <div className="mt-6">
             <ScratchCard prize={prize} onFullyRevealed={() => setRevealed(true)} />
           </div>
           <div className="text-center text-sm md:text-base mt-8 space-y-0 [&>p]:m-0" style={{color:'#50000B', fontWeight:400}}>
             <p>Show this screen to staff at the IM8 booth to claim your prize.</p>
-            <p>Share a Tweet for bonus prize! <span className="font-semibold">#FueltheChain</span></p>
+            <p>
+              Share a Tweet for bonus prize! <span className="font-semibold">#HealthandWealth #IM8 #Token2049</span>
+            </p>
           </div>
           <div className="mt-6 flex items-center justify-center">
             <a
-              href={`https://twitter.com/intent/tweet?text=${encodeURIComponent('I just won at #FueltheChain! 🎉')}`}
+              href={`https://twitter.com/intent/tweet?text=${encodeURIComponent('#HealthandWealth #IM8 #Token2049')}`}
               target="_blank"
               rel="noreferrer"
               className="btn-primary"
@@ -210,7 +225,7 @@ function Congrats({ prize, onShare }) {
 export default function App() {
   const [verified, setVerified] = useState(false)
   // Final fallback only: if logic fails, show baseline label
-  const [prize, setPrize] = useState('10% off first order')
+  const [prize, setPrize] = useState(formatPrizeName('10% off first order'))
   const apiBase = import.meta.env.VITE_API_BASE_URL || ''
 
   if (!verified) {
@@ -224,7 +239,8 @@ export default function App() {
       try {
         const res = await fetch(`${apiBase}/api/draw`, { method: 'POST', headers: { 'Content-Type': 'application/json' } })
         const data = await res.json()
-        setPrize(data?.prize?.name || 'Premium Cold Brew Token')
+        const nextPrize = data?.prize?.name || 'Premium Cold Brew Token'
+        setPrize(formatPrizeName(nextPrize))
       } catch {}
       setVerified(true)
     }} />
